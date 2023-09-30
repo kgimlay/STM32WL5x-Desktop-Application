@@ -214,10 +214,53 @@ ___
 
 ## Notable Design Choices and Limitations
 
-todo mention necessity of systick for HAL
+### SysTick
+
+For the module to function, the SysTick timer must not be disabled.  The HAL uses the SysTick timer for timeouts with the UART peripheral.
 
 ### Protocol
 
+#### TX and RX Behaviors
+
+Both the MCU and the Desktop are configured to receive and transmit messages with a timeout (the MCU by how the polling TX and RX function in the HAL and the Desktop by how the pySerial package functions).  Due to this timeout behavior, both the Desktop and the MCU can experience three basic scenarios while in RX or TX.
+
+Under RX, a message can be:
+1.  Fully received; the complete byte count is received, and the timeout period terminates,
+2.  Partially received; only a partial byte count is received, or
+3.  Nothing is received; either no message is sent or is sent too early or too late.
+
+Under TX, a message can be:
+1.  Fully transmitted; the completed byte count is sent, and the timeout period terminates,
+2.  Partially transmitted; only a partial byte count is sent, or
+3.  Nothing is transmitted; the message is sent entirely while the receiver is not listening.
+
+#### Handshaking and Sessions
+
+Before messages can be sent between the MCU and the Desktop, a handshake takes place.  This is performed mainly for the Desktop side to find the serial port that the MCU is connected to but allows for the MCU to also be aware when the Desktop is connected.  This state of whether the two are connected and ready for communication is called a Session.  The Session is considered open when both sides are ready to send and receive messages and is considered closed otherwise.  Sessions can be opened with a handshake or closed with a different handshake.
+
+The MCU and the Desktop treat open and closed sessions differently.  A closed session to the Desktop just tells the user that the MCU is not connected and prevents the Desktop application from attempting communication.  A closed session to the MCU can prevent it from spending time and power listening for messages while the Desktop is not connected, which can be costly with long timeout periods for listening.
+
+#### Software Flow Control
+
+The MCU and the Desktop buffer messages differently as well.  The MCU has only one buffer the size of a message prepared for receiving, and one for transmitting messages.  This is contrasted with the Desktop with a buffer managed by the OS and large enough to hold multiple messages.
+
+To keep behavior simple and predictable on the MCU, a polling approach is applied to the serial communications.  To avoid scenarios 2 and 3 of RX, the MCU sends a clear-to-send (CTS) message to the Desktop before starting a reception period.  It is up to the Desktop to wait for this CTS message before sending only one message to the MCU.  If no message is received by the MCU, it simply moves on.  If a full message is received, then it processes that message. 
+
+Due to the Desktop’s ability to buffer several messages gives the MCU more flexibility in sending messages.  To keep behavior simple, a non-CTS message is sent before the CTS message is.  The Desktop will ignore CTS messages received until it is ready to send a message and queues any non-CTS messages for processing.  If the Desktop has multiple messages to send, it queues them and synchronizes with the MCU with the help of CTS messages to send one at a time.
+
+In the future, a queue system for incoming and outgoing messages can be applied to the MCU as well.
+
+#### Message Architecture and Function with Flow Control
+
+Messages are defined as having two parts, a header and a body or sometimes referred to as a command and data/info for that command.  They have a fixed total length and a fixed length for the header, and consequently a fixed length for the body.  The header contains a character code that signals how the body of the message is to be treated.  For example, a message [‘ECHO’, ‘Hello!’] sent to the MCU is asking the MCU to echo back the data in the body and would return to the computer a message with ‘Hello!’ in the body.
+
+Some message header codes are reserved for controlling the state of Sessions.  In the opening handshake the headers ‘SYNC’ (for synchronize), ‘ACKN’ (for acknowledge), and ‘SYAC’ (for synchronize acknowledge) are used.  This is reminiscent of the TCP handshake but will be simplified in the future using CTS messages for better reliability (avoiding cases 2 and 3 of RX).  In the closing handshake the header ‘DISC’ (for disconnect) is used.  This will use the ‘ACNK’ header in the future.
+
+Some message header codes are reserved for software flow control.  Currently only the ‘CTS\0’ (for clear-to-send) header is used, but more may be used if needed for handling cases 2 and 3 of RX for increased reliability of communication.
+
+#### Message Function with Application Behavior
+
+Additional message headers are added for actions the Desktop sends to be performed on the MCU.  The ‘STDT’ (for set date and time) and ‘GTDT’ (for get date and time) headers are used to tell the MCU’s application to set the time based on the formatted data within the body segment of the message, or to send the MCU’s date and time back to the Desktop.  Additional header codes will be used to set events in the calendar, and more can be added to adjust parameters of the MCU’s application.
 
 
 ___
