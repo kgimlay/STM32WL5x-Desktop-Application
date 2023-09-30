@@ -104,7 +104,7 @@ bool sessionOpen(void);
 /* desktopAppSession_deinit
  *
  * Function:
- *
+ *	Deinitialize the module.
  */
 bool desktopAppSession_deinit(void);
 
@@ -139,6 +139,9 @@ DesktopComSessionStatus desktopAppSession_start(void);
  *
  * Return:
  * 	DesktopComSessionStatus
+ *		SESSION_NOT_INIT - if desktopAppSession_init() has not been performed
+ *				prior
+ *		SESSION_OKAY - if a session is already closed or if successfully opened
  *
  * Note:
  * 	Undefined - this function's implementation is a point for future development.
