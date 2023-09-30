@@ -31,11 +31,11 @@ Before you can use the module a hardware timer must be enabled an configured.  *
 
 #### Adding to Your STM32CubeMX Project
 
-Now you are ready to add the module code.  Create a new source folder and add the module's header files to the compiler's include directory.
+Now you are ready to add the [module code](Modules/MCU/Modules).  Create a new source folder and add the module's header files to the compiler's include directory.
 
 1. Right click on the sub-project for the core you want to use the module in.
 2. Navigate to New > Source Folder.
-3. Name the new Source Folder Modules.  Copy the Desktop_Communication folder into here.
+3. Name the new Source Folder Modules.  Copy the [Desktop_Communication](Modules/MCU/Modules) folder into here.
 4. Right click again on the same sub-project.  Navigate to Properties.
 5. On the left side, navigate to C/C++ Build > Settings.
 6. Within that window navigate to MCU GCC Compiler > Include Paths.
@@ -56,10 +56,11 @@ Now you are ready to add the module code.  Create a new source folder and add th
 
 todo: making a new dir for desktop app
 todo: add pyserial stuff here
+todo: [module code](Modules/Desktop)
 
 ### Example Usage
 
-A simple usage example STM32CubeMX project is provided along with a sample Desktop Application.  This example shows the session-level command "ECHO" and a custom application-level command "LED".  The ECHO command just asks the MCU to echo back the message exactly as it was received, which can be useful for testing purposes.  The LED command we will define to toggle the blue LED on the Nucleo development board.
+A simple usage [example STM32CubeMX project](Example) is provided along with a sample Desktop Application.  This example shows the session-level command "ECHO" and a custom application-level command "LED".  The ECHO command just asks the MCU to echo back the message exactly as it was received, which can be useful for testing purposes.  The LED command we will define to toggle the blue LED on the Nucleo development board.
 
 First, lets look at the MCU.
 
