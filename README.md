@@ -58,6 +58,15 @@ todo: making a new dir for desktop app
 todo: add pyserial stuff here
 todo: [module code](Modules/Desktop)
 
+1. Now create a new directory for your desktop application's scripts.
+2. Copy the [desktop application python scripts](Modules/Desktop) into this folder.
+3. Open a terminal at this location.  Make sure that the Python package [PySerial](https://pypi.org/project/pyserial/) is installed on your system.  This can be done with:
+```
+pip3 install pyserial
+```
+
+You can now develop using these python scripts.
+
 ### Example Usage
 
 A simple usage [example STM32CubeMX project](Example) is provided along with a sample Desktop Application.  This example shows the session-level command "ECHO" and a custom application-level command "LED".  The ECHO command just asks the MCU to echo back the message exactly as it was received, which can be useful for testing purposes.  The LED command we will define to toggle the blue LED on the Nucleo development board.
